@@ -2,8 +2,10 @@ import dataclasses
 
 import requests
 import marshmallow
+import io
+import zipfile
 
-base_url = "https://covid19map.elixir-luxembourg.org/minerva/api/"
+base_url = None
 auth_cookies = None
 
 _handlers = {
@@ -41,10 +43,9 @@ def _get_objects(url, schema_cls, many=False, additional_data=None):
         cookies = auth_cookies
     else:
         cookies = None
-    print(url)
     response = requests.get(url, cookies=cookies)
-    if response.status_code != 200:
-        raise Exception(f"{response.status_code}, {response.json()}")
+    if not response.ok:
+        raise Exception(f"{response.status_code}, {response.text}")
     json = response.json()
     if many:
         json_with_additional_data = [e | additional_data for e in json]
@@ -86,7 +87,7 @@ class Model:
     name: str
     projectId: str
 
-    def download(self, format="celldesigner", output=None):
+    def download(self, format="celldesigner", output=None, unzip=True):
         return download_model(self, format=format, output=output)
 
 
@@ -130,11 +131,20 @@ class _ModelSchema(marshmallow.Schema):
         return Model(**data)
 
 
+def set_base_url(url):
+    global base_url
+    base_url = url
+
+
 def log_in(username, password):
     url = _join_urls([base_url, _login_url])
-    result = requests.post(url, data={"login": username, "password": password})
+    response = requests.post(
+        url, data={"login": username, "password": password}
+    )
+    if not response.ok:
+        raise Exception(f"{response.status_code}, {response.text}")
     global auth_cookies
-    auth_cookies = result.cookies
+    auth_cookies = response.cookies
 
 
 def log_out():
@@ -187,6 +197,7 @@ def download_model(
     project_or_project_id=None,
     format="celldesigner",
     output=None,
+    unzip=True,
 ):
     if not isinstance(model_or_model_id, Model):
         if project_or_project_id is None:
@@ -210,31 +221,19 @@ def download_model(
     url = _join_urls(
         [base_url, _projects_url, project_id, _models_url, download_url]
     )
-    print(url)
-    result = requests.get(
+    response = requests.get(
         url,
         params={"handlerClass": _handlers[format]},
     )
-    content = result.content
+    content = response.content
+    if unzip and response.headers["Content-Type"] == "application/zip":
+        z = zipfile.ZipFile(io.BytesIO(content))
+        zip_infos = z.infolist()
+        content = z.read(zip_infos[0])
     if output is not None:
         with open(output, "wb") as f:
             f.write(content)
     return content
-
-
-def write_model(
-    model_or_model_id,
-    file_path,
-    project_or_project_id=None,
-    format="celldesigner",
-):
-    content = download_model(
-        model_or_model_id,
-        project_or_project_id=project_or_project_id,
-        format=format,
-    )
-    with open(file_path, "wb") as f:
-        f.write(content)
 
 
 def get_formats():
