@@ -114,13 +114,13 @@ class TestProject(unittest.TestCase):
         prepare()
         projects = minervapy.project.get_projects()
         project = projects[0]
-        content = minervapy.project.download_source(project.projectId)
+        data = minervapy.project.download_source(project.projectId)
 
     def test_download_source_from_project_id_with_output_file(self):
         prepare()
         projects = minervapy.project.get_projects()
         project = projects[0]
-        content = minervapy.project.download_source(
+        data = minervapy.project.download_source(
             project.projectId, "output_source.xml"
         )
 
@@ -172,7 +172,7 @@ class TestMaps(unittest.TestCase):
         project = projects[0]
         maps = minervapy.map.get_maps(project)
         map = maps[0]
-        minervapy.map.download_map(
+        data = minervapy.map.download_map(
             map.idObject,
             project_or_project_id=project.projectId,
             format="celldesigner",
@@ -185,7 +185,7 @@ class TestMaps(unittest.TestCase):
         project = projects[0]
         maps = minervapy.map.get_maps(project)
         map = maps[0]
-        minervapy.map.download_map(
+        data = minervapy.map.download_map(
             map,
             format="celldesigner",
             output_file_path="output_celldesigner_map.xml",
@@ -197,10 +197,23 @@ class TestMaps(unittest.TestCase):
         project = projects[0]
         maps = minervapy.map.get_maps(project)
         map = maps[0]
-        minervapy.map.download_map(
+        data = minervapy.map.download_map(
             map,
             format="png",
             output_file_path="output_celldesigner_map.png",
+        )
+
+    def test_download_map_from_map_as_png_with_zoom_level_5(self):
+        prepare()
+        projects = minervapy.project.get_projects()
+        project = projects[0]
+        maps = minervapy.map.get_maps(project)
+        map = maps[0]
+        data = minervapy.map.download_map(
+            map,
+            format="png",
+            output_file_path="output_celldesigner_map.png",
+            zoom_level=5.0,
         )
 
     def test_map_download_as_celldesigner(self):
@@ -209,7 +222,7 @@ class TestMaps(unittest.TestCase):
         project = projects[0]
         maps = minervapy.map.get_maps(project)
         map = maps[0]
-        map.download(
+        data = map.download(
             format="celldesigner",
             output_file_path="output_celldesigner_map.xml",
         )
