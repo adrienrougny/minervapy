@@ -22,14 +22,16 @@ def check_response(response):
         raise Exception(f"{response.status_code}, {response.text}")
 
 
-def response_to_file(response, output_file_path, unzip=True):
-    content = response.content
-    if unzip and response.headers["Content-Type"] == "application/zip":
-        z = zipfile.ZipFile(io.BytesIO(content))
-        zip_infos = z.infolist()
-        content = z.read(zip_infos[0])
+def unzip_data(data):
+    z = zipfile.ZipFile(io.BytesIO(data))
+    zip_infos = z.infolist()
+    data = z.read(zip_infos[0])
+    return data
+
+
+def data_to_file(data, output_file_path):
     with open(output_file_path, "wb") as output_file:
-        output_file.write(content)
+        output_file.write(data)
 
 
 def request_to_response(
@@ -49,6 +51,19 @@ def request_to_response(
         cookies=cookies,
     )
     return response
+
+
+def request_to_data(
+    url, method="GET", data=None, params=None, headers=None, unzip=True
+):
+    response = request_to_response(
+        url, method=method, data=data, params=params, headers=headers
+    )
+    check_response(response)
+    data = response.content
+    if unzip and response.headers["Content-Type"] == "application/zip":
+        data = unzip_data(data)
+    return data
 
 
 def request_to_objects(
@@ -75,19 +90,3 @@ def request_to_objects(
     schema = schema_cls(many=many, unknown=marshmallow.EXCLUDE)
     objects = schema.load(json_with_additional_data, partial=True)
     return objects
-
-
-def request_to_file(
-    url,
-    output_file_path,
-    method="GET",
-    data=None,
-    params=None,
-    headers=None,
-    unzip=True,
-):
-    response = request_to_response(
-        url, method=method, data=data, params=params, headers=headers
-    )
-    check_response(response)
-    response_to_file(response, output_file_path, unzip=unzip)

@@ -232,7 +232,7 @@ def get_project(project_id):
     return project
 
 
-def download_source(project_or_project_id, output_file_path=None):
+def download_source(project_or_project_id, output_file_path=None, unzip=True):
     if isinstance(project_or_project_id, Project):
         project_id = project_or_project_id.projectId
     else:
@@ -241,12 +241,10 @@ def download_source(project_or_project_id, output_file_path=None):
     url = minervapy.utils.join_urls(
         [minervapy.session.get_base_url(), _projects_url, url_suffix]
     )
-    response = minervapy.utils.request_to_response(url)
-    minervapy.utils.check_response(response)
-    content = response.content
+    data = minervapy.utils.request_to_data(url, unzip=True)
     if output_file_path is not None:
-        minervapy.utils.response_to_file(response, output_file_path)
-    return content
+        minervapy.utils.data_to_file(data, output_file_path)
+    return data
 
 
 def get_statistics(project_or_project_id):
