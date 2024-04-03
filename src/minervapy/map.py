@@ -34,10 +34,28 @@ class Map:
     )
 
     def download(
-        self, format="celldesigner", output_file_path=None, unzip=True
+        self,
+        format="celldesigner",
+        output_file_path=None,
+        unzip=True,
+        polygon=None,  # list[tuple[float, float]]
+        element_ids=None,  # list[str]
+        reaction_ids=None,  # list[str]
+        background_overlay_id=None,  # str
+        zoom_level=None,  # float
+        overlay_ids=None,  # list[str]
     ):
         return download_map(
-            self, format=format, output_file_path=output_file_path, unzip=unzip
+            self,
+            format=format,
+            output_file_path=output_file_path,
+            unzip=unzip,
+            polygon=polygon,
+            element_ids=element_ids,
+            reaction_ids=reaction_ids,
+            background_overlay_id=background_overlay_id,
+            zoom_level=zoom_level,
+            overlay_ids=overlay_ids,
         )
 
 
@@ -117,6 +135,12 @@ def download_map(
     format="celldesigner",
     output_file_path=None,
     unzip=True,
+    polygon=None,  # list[tuple[float, float]]
+    element_ids=None,  # list[str]
+    reaction_ids=None,  # list[str]
+    background_overlay_id=None,  # str
+    zoom_level=None,  # float
+    overlay_ids=None,  # list[str]
 ):
     if not isinstance(map_or_map_id, Map):
         if project_or_project_id is None:
@@ -145,16 +169,28 @@ def download_map(
             url_suffix,
         ]
     )
-    response = minervapy.utils.request_to_response(
-        url,
-        params={
-            "handlerClass": minervapy.conversion._short_format_to_minerva_default_format[
-                format
-            ]
-        },
-    )
-    minervapy.utils.check_response(response)
-    content = response.content
+    params = {
+        "handlerClass": minervapy.conversion._short_format_to_minerva_default_format[
+            format
+        ]
+    }
+    if polygon is not None:
+        polygon_str = ";".join([f"{t[0]},{t[1]}" for t in polygon])
+        params["polygonString"] = polygon_str
+    if element_ids is not None:
+        element_ids_str = ",".join(element_ids)
+        params["elementIds"] = element_ids_str
+    if reaction_ids is not None:
+        reaction_ids_str = ",".join(reaction_ids)
+        params["reactionIds"] = reaction_ids_str
+    if background_overlay_id is not None:
+        params["backgroundOverlayId"] = background_overlay_id
+    if zoom_level is not None:
+        params["zoomLevel"] = zoom_level
+    if overlay_ids is not None:
+        overlay_ids_str = ",".join(overlay_ids)
+        params["overlayIds"] = overlay_ids_str
+    data = minervapy.utils.request_to_data(url, params=params, unzip=unzip)
     if output_file_path is not None:
-        minervapy.utils.response_to_file(response, output_file_path)
-    return content
+        minervapy.utils.data_to_file(data, output_file_path)
+    return data
