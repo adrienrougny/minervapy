@@ -432,7 +432,9 @@ def get_configuration():
     url = minervapy.utils.join_urls(
         [minervapy.session.get_base_url(), _configuration_url]
     )
-    configuration = minervapy.utils.get_objects(url, _ConfigurationSchema)
+    configuration = minervapy.utils.request_to_objects(
+        url, _ConfigurationSchema
+    )
     return configuration
 
 
@@ -440,5 +442,5 @@ def get_options():
     url = minervapy.utils.join_urls(
         [minervapy.session.get_base_url(), _options_url]
     )
-    options = minervapy.utils.get_objects(url, _OptionSchema, many=True)
+    options = minervapy.utils.request_to_objects(url, _OptionSchema, many=True)
     return options

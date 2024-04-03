@@ -40,37 +40,46 @@ _image_formats = set(["png", "pdf", "svg"])
 
 
 def get_formats(format_to_image=True, format_to_format=True):
+
+    def _get_formats_from_url(url):
+        inputs = set([])
+        outputs = set([])
+        response = requests.get(url)
+        minervapy.utils.check_response(response)
+        json = response.json()
+        for input_formats in json["inputs"]:
+            for input_format in input_formats["available_names"]:
+                inputs.add(_minerva_format_to_short_format[input_format])
+        for output_formats in json["outputs"]:
+            for output_format in output_formats["available_names"]:
+                outputs.add(_minerva_format_to_short_format[output_format])
+        return inputs, outputs
+
     inputs = set([])
     outputs = set([])
     if format_to_format:
         url = minervapy.utils.join_urls(
             [minervapy.session.get_base_url(), _conversion_url]
         )
-        response = requests.get(url)
-        json = minervapy.utils.get_json(response)
-        for input_formats in json["inputs"]:
-            for input_format in input_formats["available_names"]:
-                inputs.add(_minerva_format_to_short_format[input_format])
-        for output_formats in json["outputs"]:
-            for output_format in output_formats["available_names"]:
-                outputs.add(_minerva_format_to_short_format[output_format])
+        format_inputs, format_outputs = _get_formats_from_url(url)
+        inputs.update(format_inputs)
+        outputs.update(format_outputs)
     if format_to_image:
         url = minervapy.utils.join_urls(
             [minervapy.session.get_base_url(), _conversion_image_url]
         )
-        response = requests.get(url)
-        json = minervapy.utils.get_json(response)
-        for input_formats in json["inputs"]:
-            for input_format in input_formats["available_names"]:
-                inputs.add(_minerva_format_to_short_format[input_format])
-        for output_formats in json["outputs"]:
-            for output_format in output_formats["available_names"]:
-                outputs.add(_minerva_format_to_short_format[output_format])
+        image_inputs, image_outputs = _get_formats_from_url(url)
+        inputs.update(image_inputs)
+        outputs.update(image_outputs)
     return inputs, outputs
 
 
 def convert(
-    input_file_path, input_format, output_file_path, output_format, unzip=True
+    input_file_path_or_input_data,
+    input_format,
+    output_format,
+    output_file_path=None,
+    unzip=True,
 ):
     if output_format in _image_formats:
         conversion_url = _conversion_image_url
@@ -88,17 +97,21 @@ def convert(
             url_suffix,
         ]
     )
-    with open(input_file_path, "rb") as input_file:
-        input_data = input_file.read()
-    response = requests.post(
-        url=url,
+    if isinstance(input_file_path_or_input_data, bytes):
+        input_data = input_file_path_or_input_data
+    else:
+        with open(input_file_path_or_input_data, "rb") as input_file:
+            input_data = input_file.read()
+    response = minervapy.utils.request_to_response(
+        url,
+        method="POST",
         data=input_data,
         headers={"Content-Type": "application/octet-stream"},
     )
     content = response.content
-    if unzip and response.headers["Content-Type"] == "application/zip":
-        z = zipfile.ZipFile(io.BytesIO(content))
-        zip_infos = z.infolist()
-        content = z.read(zip_infos[0])
-    with open(output_file_path, "wb") as output_file:
-        output_file.write(content)
+    minervapy.utils.check_response(response)
+    if output_file_path is not None:
+        minervapy.utils.response_to_file(
+            response, output_file_path, unzip=unzip
+        )
+    return content

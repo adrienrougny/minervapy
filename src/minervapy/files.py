@@ -39,7 +39,7 @@ def create_new_file(file_name, length):
     url = minervapy.utils.join_urls(
         [minervapy.session.get_base_url(), _files_url]
     )
-    new_file = minervapy.utils.get_objects(
+    new_file = minervapy.utils.request_to_objects(
         url=url,
         schema_cls=_FileSchema,
         method="POST",
@@ -61,7 +61,7 @@ def upload_content_to_file(input_file_path, output_file_or_file_id):
     )
     with open(input_file_path, "rb") as input_file:
         input_data = input_file.read()
-    output_file = minervapy.utils.get_objects(
+    output_file = minervapy.utils.request_to_objects(
         url=url,
         schema_cls=_FileSchema,
         method="POST",
@@ -85,5 +85,5 @@ def get_file(file_id):
     url = minervapy.utils.join_urls(
         [minervapy.session.get_base_url(), _files_url, file_id]
     )
-    file = minervapy.utils.get_objects(url, _FileSchema)
+    file = minervapy.utils.request_to_objects(url, _FileSchema)
     return file
