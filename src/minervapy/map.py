@@ -13,6 +13,35 @@ _download_image_url = "downloadImage"
 
 
 @dataclasses.dataclass
+class Article:
+    title: str | None = None
+    authors: list[str] = dataclasses.field(default_factory=list)
+    journal: str | None = None
+    year: int | None = None
+    link: str | None = None
+    pubmedId: str | None = None
+    citationCount: int | None = None
+
+
+@dataclasses.dataclass
+class Reference:
+    link: str | None = None
+    article: Article | None = None
+    type: str | None = None
+    resource: str | None = None
+    id: int | None = None
+    annotatorClassName: str | None = None
+
+
+@dataclasses.dataclass
+class Author:
+    firstName: str | None = None
+    lastName: str | None = None
+    email: str | None = None
+    organisation: str | None = None
+
+
+@dataclasses.dataclass
 class Map:
     name: str | None = None
     description: str | None = None
@@ -25,8 +54,8 @@ class Map:
     defaultZoomLevel: float | None = None
     minZoom: float | None = None
     maxZoom: float | None = None
-    authors: list[str] = dataclasses.field(default_factory=list)
-    references: list[str] = dataclasses.field(default_factory=list)
+    authors: list[Author] = dataclasses.field(default_factory=list)
+    references: list[Reference] = dataclasses.field(default_factory=list)
     creationDate: str | None = None
     modificationDates: list[str] = dataclasses.field(default_factory=list)
     projectId: str | None = (
@@ -59,6 +88,38 @@ class Map:
         )
 
 
+class _ArticleSchema(marshmallow.Schema):
+    title = marshmallow.fields.String(required=False, allow_none=True)
+    authors = marshmallow.fields.List(
+        marshmallow.fields.String, required=False, allow_none=True
+    )
+    journal = marshmallow.fields.String(required=False, allow_none=True)
+    year = marshmallow.fields.Integer(required=False, allow_none=True)
+    link = marshmallow.fields.String(required=False, allow_none=True)
+    pubmedId = marshmallow.fields.String(required=False, allow_none=True)
+    citationCount = marshmallow.fields.Integer(required=False, allow_none=True)
+
+
+class _ReferenceSchema(marshmallow.Schema):
+    link = marshmallow.fields.String(required=False, allow_none=True)
+    article = marshmallow.fields.Nested(
+        _ArticleSchema, required=False, allow_none=True
+    )
+    type = marshmallow.fields.String(required=False, allow_none=True)
+    resource = marshmallow.fields.String(required=False, allow_none=True)
+    id = marshmallow.fields.Integer(required=False, allow_none=True)
+    annotatorClassName = marshmallow.fields.String(
+        required=False, allow_none=True
+    )
+
+
+class _AuthorSchema(marshmallow.Schema):
+    firstName = marshmallow.fields.String(required=False, allow_none=True)
+    lastName = marshmallow.fields.String(required=False, allow_none=True)
+    email = marshmallow.fields.String(required=False, allow_none=True)
+    organisation = marshmallow.fields.String(required=False, allow_none=True)
+
+
 class _MapSchema(marshmallow.Schema):
     name = marshmallow.fields.String(required=False, allow_none=True)
     description = marshmallow.fields.String(required=False, allow_none=True)
@@ -72,10 +133,14 @@ class _MapSchema(marshmallow.Schema):
     minZoom = marshmallow.fields.Float(required=False, allow_none=True)
     maxZoom = marshmallow.fields.Float(required=False, allow_none=True)
     authors = marshmallow.fields.List(
-        marshmallow.fields.String, required=False, allow_none=True
+        marshmallow.fields.Nested(_AuthorSchema),
+        required=False,
+        allow_none=True,
     )
     references = marshmallow.fields.List(
-        marshmallow.fields.String, required=False, allow_none=True
+        marshmallow.fields.Nested(_ReferenceSchema),
+        required=False,
+        allow_none=True,
     )
     creationDate = marshmallow.fields.String(required=False, allow_none=True)
     modificationDates = marshmallow.fields.List(
