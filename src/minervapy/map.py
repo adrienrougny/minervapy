@@ -64,7 +64,7 @@ class Map:
 
     def download(
         self,
-        format="celldesigner",
+        format_="celldesigner",
         output_file_path=None,
         unzip=True,
         polygon=None,  # list[tuple[float, float]]
@@ -76,7 +76,7 @@ class Map:
     ):
         return download_map(
             self,
-            format=format,
+            format_=format_,
             output_file_path=output_file_path,
             unzip=unzip,
             polygon=polygon,
@@ -197,7 +197,7 @@ def get_map(map_id, project_or_project_id):
 def download_map(
     map_or_map_id,
     project_or_project_id=None,
-    format="celldesigner",
+    format_="celldesigner",
     output_file_path=None,
     unzip=True,
     polygon=None,  # list[tuple[float, float]]
@@ -220,7 +220,7 @@ def download_map(
     else:
         map_id = map_or_map_id.idObject
         project_id = map_or_map_id.projectId
-    if format in minervapy.conversion._image_formats:
+    if format_ in minervapy.conversion._image_formats:
         download_url = _download_image_url
     else:
         download_url = _download_format_url
@@ -236,7 +236,7 @@ def download_map(
     )
     params = {
         "handlerClass": minervapy.conversion._short_format_to_minerva_default_format[
-            format
+            format_
         ]
     }
     if polygon is not None:
