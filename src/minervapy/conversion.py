@@ -102,16 +102,13 @@ def convert(
     else:
         with open(input_file_path_or_input_data, "rb") as input_file:
             input_data = input_file.read()
-    response = minervapy.utils.request_to_response(
+    data = minervapy.utils.request_to_data(
         url,
         method="POST",
         data=input_data,
         headers={"Content-Type": "application/octet-stream"},
+        unzip=unzip,
     )
-    content = response.content
-    minervapy.utils.check_response(response)
     if output_file_path is not None:
-        minervapy.utils.response_to_file(
-            response, output_file_path, unzip=unzip
-        )
-    return content
+        minervapy.utils.data_to_file(data, output_file_path)
+    return data
