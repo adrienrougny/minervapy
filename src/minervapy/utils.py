@@ -7,6 +7,10 @@ import marshmallow
 import minervapy.session
 
 
+class StatusCodeException(Exception):
+    pass
+
+
 def join_urls(urls):
     to_join = []
     for url in urls[:-1]:
@@ -19,7 +23,7 @@ def join_urls(urls):
 
 def check_response(response):
     if not response.ok:
-        raise Exception(f"{response.status_code}, {response.text}")
+        raise StatusCodeException(f"{response.status_code}, {response.text}")
 
 
 def unzip_data(data):
