@@ -21,9 +21,7 @@ class MiriamType:
 
 @dataclasses.dataclass
 class Parameter:
-    annotation_type: str | None = (
-        None  # doc says MiriamType but seems to be str
-    )
+    annotation_type: str | None = None  # doc says MiriamType but seems to be str
     field: str | None = None
     commonName: str | None = None
     description: str | None = None
@@ -79,9 +77,7 @@ class MapType:
 @dataclasses.dataclass
 class ModelFormat:
     extension: str | None = None
-    extensions: list[str] = dataclasses.field(
-        default_factory=list
-    )  # not in the doc
+    extensions: list[str] = dataclasses.field(default_factory=list)  # not in the doc
     name: str | None = None
     handler: str | None = None
 
@@ -131,27 +127,21 @@ class UnitType:
 @dataclasses.dataclass
 class Configuration:
     annotators: list[Annotator] = dataclasses.field(default_factory=list)
-    bioEntityFields: list[BioEntityField] = dataclasses.field(
-        default_factory=list
-    )
+    bioEntityFields: list[BioEntityField] = dataclasses.field(default_factory=list)
     buildDate: str | None = None
     gitHash: str | None = None
     version: str | None = None
     imageFormats: list[ImageFormat] = dataclasses.field(default_factory=list)
-    mapCanvasTypes: list[MapCanvasType] = dataclasses.field(
-        default_factory=list
-    )
+    mapCanvasTypes: list[MapCanvasType] = dataclasses.field(default_factory=list)
     mapTypes: list[MapType] = dataclasses.field(default_factory=list)
     miriamTypes: dict[str, MiriamType] = dataclasses.field(default_factory=dict)
     modelFormats: list[ModelFormat] = dataclasses.field(default_factory=list)
-    modificationStateTypes: dict[str, MofidicationStateType] = (
-        dataclasses.field(default_factory=list)
+    modificationStateTypes: dict[str, MofidicationStateType] = dataclasses.field(
+        default_factory=list
     )
     options: list[Option] = dataclasses.field(default_factory=list)
     overlayTypes: list[OverlayType] = dataclasses.field(default_factory=list)
-    privilegeTypes: dict[str, PrivilegeType] = dataclasses.field(
-        default_factory=dict
-    )
+    privilegeTypes: dict[str, PrivilegeType] = dataclasses.field(default_factory=dict)
     reactionTypes: list[ReactionType] = dataclasses.field(default_factory=list)
     unitTypes: list[UnitType] = dataclasses.field(default_factory=list)
     elementTypes: list[ElementType] = dataclasses.field(default_factory=list)
@@ -170,9 +160,7 @@ class Configuration:
 class _MiriamTypeSchema(marshmallow.Schema):
     commonName = marshmallow.fields.String(required=False, allow_none=True)
     homepage = marshmallow.fields.String(required=False, allow_none=True)
-    registryIdentifier = marshmallow.fields.String(
-        required=False, allow_none=True
-    )
+    registryIdentifier = marshmallow.fields.String(required=False, allow_none=True)
     uris = marshmallow.fields.List(
         marshmallow.fields.String(), required=False, allow_none=True
     )  # also labeled registryIdentifier in the docs
@@ -289,9 +277,7 @@ class _MofidicationStateTypeSchema(marshmallow.Schema):
 
 
 class _OptionSchema(marshmallow.Schema):
-    idObject = marshmallow.fields.Int(
-        required=False, allow_none=True
-    )  # not in the doc
+    idObject = marshmallow.fields.Int(required=False, allow_none=True)  # not in the doc
     commonName = marshmallow.fields.String(required=False, allow_none=True)
     group = marshmallow.fields.String(required=False, allow_none=True)
     isServerSide = marshmallow.fields.Boolean(required=False, allow_none=True)
@@ -432,15 +418,11 @@ def get_configuration():
     url = minervapy.utils.join_urls(
         [minervapy.session.get_base_url(), _configuration_url]
     )
-    configuration = minervapy.utils.request_to_objects(
-        url, _ConfigurationSchema
-    )
+    configuration = minervapy.utils.request_to_objects(url, _ConfigurationSchema)
     return configuration
 
 
 def get_options():
-    url = minervapy.utils.join_urls(
-        [minervapy.session.get_base_url(), _options_url]
-    )
+    url = minervapy.utils.join_urls([minervapy.session.get_base_url(), _options_url])
     options = minervapy.utils.request_to_objects(url, _OptionSchema, many=True)
     return options
