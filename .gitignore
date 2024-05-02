@@ -1,1 +1,2 @@
-src/minervapy/__pycache__/
+src/minervapy/__pycache__
+.pdm-python
